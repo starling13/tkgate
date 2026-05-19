@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Mon Jan 19 18:16:01 2009
 ****************************************************************************/
@@ -65,7 +65,7 @@ GGateInfo gate_in_info = {
   1,{{"Z",OUT,1,1,in_out_loc}},
   {{-8,4,RJ},{0,16,CT},{8,4,LJ},{0,-7,CT}},
   {1,1,1},
-  
+
   {0},
 
   InOut_Make,
@@ -94,12 +94,16 @@ GCElement *InOut_Make(EditState **es,GModuleDef *env,int GType,
 		      int x,int y,int r,const char *Name,int noWire,const char **options,int nOptions)
 {
   GCElement     *g;
+  /** @TODO to remove */
+  /*
   GGateInfo *gi;
+  */
 
   if (!(g = Generic_Make(es,env,GType,x,y,r,Name,noWire,options,nOptions)))
     return NULL;
 
-  gi = g->typeinfo;
+  /** @TODO to remove */
+  /* gi = g->typeinfo; */
 
   if (es) {
     Tcl_SetVar(TkGate.tcl,"edgat_newPort","1",TCL_GLOBAL_ONLY);

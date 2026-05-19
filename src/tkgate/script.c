@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #include "tkgate.h"
 
@@ -51,26 +51,29 @@ static char *psScript[] = {
 };
 
 GGateInfo gate_script_info = {
-  0,
-  "SCRIPT",
-  "script",0x0,
-  "script",psScript,
-  -1,0,
+  /*.Code = */0,
+  /*.name = */"SCRIPT",
+  /*.vnames = */"script", /*.vmask = */0x0,
+  /*.psprint = */"script", /*.psdef = */psScript,
+  /*.gi_multiPad = */-1, /*.gi_bitPad = */0,
 
-  {{"V",	{0,0},		{"gm.script",0,0},	"gat_make SCRIPT"},
-   {0}},
+  /*.cmds = */{
+   { /*.key_seq = */"V",
+     /*.root = */{/*.name = */0, /*.ul = */0},
+     /*.entry = */{/*.name = */"gm.script", /*.ul = */0, /*.gtag = */0},
+     /*.command = */"gat_make SCRIPT" },
+   {0}
+  },
 
+  /*.dim = */script_iconDims,
+  /*.NumPads = */0,
+  /*.Pad = */{{0}},
+  /*.lpos = */{{0,-19,CT},{0,-19,CT},{0,-19,CT},{0,-19,CT}},
+  /*.Flags = */{1},
+  /*.delayNames = */{0},
 
-  script_iconDims,
-
-  0,{0},
-  {{0,-19,CT},{0,-19,CT},{0,-19,CT},{0,-19,CT}},
-  {1},
-
-  {0},
-  
-  Script_Make,
-  Nop_WriteCellDef,
+  /*.MakeFunction = */Script_Make,
+  /*.WriteCellDef = */Nop_WriteCellDef,
   Generic_Init,
   Script_Delete,
   Generic_GetExtents,
@@ -119,7 +122,7 @@ static GCElement *Script_Copy(GModuleDef *M,GCElement *g,int x,int y,unsigned fl
   for (L = g->u.comment.first;L;L = L->next) {
     Comment_addLine(ng,L->text);
   }
-  
+
 
   return ng;
 }

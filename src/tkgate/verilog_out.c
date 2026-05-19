@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2009 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,7 +79,7 @@ int strIOType(const char *code)
 
 /*****************************************************************************
  *
- * Generate the gate type name for gate g of type gi 
+ * Generate the gate type name for gate g of type gi
  *
  * Parameters:
  *    gi		Type info for gate
@@ -194,8 +194,8 @@ int VerilogBasicGateParmList(FILE *f,GCElement *g)
       if (w->net->n_signame)
 	fprintf(f,"(%s%s)",inv,w->net->n_signame);
       else
-	fprintf(f,"(%sw%x)",inv,(unsigned)w->net);
-    } 
+	fprintf(f,"(%sw%lx)",inv,(uintptr_t)w->net);
+    }
   }
   fprintf(f,");");
   return 0;
@@ -238,7 +238,7 @@ void VerilogBasicGateComment(FILE *f,GCElement *g,unsigned flags)
       for (i = 0;i < gi->NumPads;i++) {
 	for (w = g->wires[i], j=0;w;w = w->next, j++) {
 	  fprintf(f," %d",w->nidx);
-	} 
+	}
       }
       fprintf(f," ]");
     }
@@ -340,7 +340,7 @@ static void VerilogSaveOneNet(FILE *f,GNet *n)
   if (n->n_signame)
     fprintf(f,"%s;    ",n->n_signame);
   else
-    fprintf(f,"w%x;    ",(unsigned)n);
+    fprintf(f,"w%lx;    ",(uintptr_t)n);
 
   fprintf(f,"//:");
   if (!n->n_show_name)
@@ -472,7 +472,7 @@ static void VerilogSaveModSymbol(FILE *f,GModSymbol *ms)
   if (!ms) return;
 
   fprintf(f,"\n");
-  fprintf(f,"//: /symbolBegin: %u\n",(unsigned)ms);
+  fprintf(f,"//: /symbolBegin: %lu\n",(uintptr_t)ms);
 
   /*
    * Generate the normal icon data
@@ -531,7 +531,7 @@ static void VerilogSaveModInterface(FILE *f,GModuleDef *M)
   if (!g) return;
 
   if (GCElement_getType(g) == GC_SYMBLOCK) {
-    fprintf(f,"//: /symbol:%u\n",(unsigned)g->u.block.symbol);
+    fprintf(f,"//: /symbol:%lu\n",(uintptr_t)g->u.block.symbol);
   }
 
   gi = g->typeinfo;
@@ -547,7 +547,7 @@ static void VerilogSaveModInterface(FILE *f,GModuleDef *M)
       else
 	fprintf(f,"%s[%d:0]",w->name,w->net->n_nbits-1);
       fprintf(f,"(%d/%d)",w->offset.num,w->offset.den);
-    } 
+    }
   }
   fprintf(f," ]");
   fprintf(f," /pd: %d",M->m_protData);
@@ -798,7 +798,7 @@ int VerilogWriteModules(const char *name,vsaveopts_t flags)
     for (i = 0;i < c->numInitScripts;i++)
       fprintf(f,"//: script \"%s\"\n",quoteChars(buf,c->initScripts[i],"\"\\"));
     fprintf(f,"\n");
-  }    
+  }
 
   for (E = Hash_first(TkGate.libraries);E;E = Hash_next(TkGate.libraries,E)) {
     const char *name = SHashElem_key(E);
@@ -894,7 +894,7 @@ static int check_file(const char *name)
 
   sprintf(cmd,"%s/libexec/tkgate",TkGate.homedir);
   if (!(pid = fork())) {
-    execl(cmd,cmd,"-Vq",name,0);
+    execl(cmd,cmd,"-Vq",name,(char*)NULL);
     exit(1);
   }
 
@@ -946,7 +946,7 @@ int isWritable(const char *name)
    */
   if (stat(name, &sb) == 0) {
     unsigned mode = sb.st_mode & 7;
-    
+
     if (uid == sb.st_uid)
       mode |= (sb.st_mode >> 6) & 7;
     if (gid == sb.st_gid)
@@ -978,7 +978,7 @@ int isWritable(const char *name)
 
   if (stat(dirName, &sb) == 0) {
     unsigned mode = sb.st_mode & 7;
-    
+
     if (uid == sb.st_uid)
       mode |= (sb.st_mode >> 6) & 7;
     if (gid == sb.st_gid)
@@ -1039,7 +1039,7 @@ int VerilogSave(const char *name)
    */
   if (file_exists) {
     /*
-     * If this is the first time we have saved and the file exists, make a backup. 
+     * If this is the first time we have saved and the file exists, make a backup.
      */
     if (doBackupOnSave) {
       char buf[STRMAX];
@@ -1071,7 +1071,7 @@ int VerilogSave(const char *name)
 	unlink(tempName1);
 	unlink(tempName2);
 	DoTcl("yesno [format [m err.nosafesave] %s]",name);
-	if (strcmp(TkGate.tcl->result,"yes") == 0)
+	if (strcmp(Tcl_GetStringResult(TkGate.tcl),"yes") == 0)
 	  VerilogQuickSave(name,saveFlags);
 	return 0;
       }

@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #include <stdlib.h>
 #include <assert.h>
@@ -166,7 +166,7 @@ Cursor Cursor_find(int id)
 void init_cursors()
 {
   XColor FGC,BGC,FGCreal,BGCreal;
-  int MaxW,MaxH;
+  unsigned int MaxW,MaxH;
   Cursor default_cursor = XCreateFontCursor(TkGate.D,XC_top_left_arrow);
   CursorDef *CSet;
   int i;
@@ -194,7 +194,7 @@ void init_cursors()
   } else {
     if (MaxW < 16 && MaxH < 16) {
       printf("[Warning: hardware cursors limited to "
-	     "%dx%d (need at least 16x16).]\n",MaxW,MaxH);
+	     "%ux%u (need at least 16x16).]\n",MaxW,MaxH);
     }
 #if DEBUG_CURSORS
     printf("using smallCursors\n");

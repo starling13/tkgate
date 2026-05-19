@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2007 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Fri Feb 13 20:25:04 2009
 ****************************************************************************/
@@ -96,16 +96,17 @@ void VGSim_init(VGSim *vg)
   vg->vg_baseDirectory = 0;
   vg->vg_topModuleName = 0;
   vg->vg_defaultTopModuleName = 0;
-  vg->vg_interactive = 0;
   SHash_init(&vg->vg_modules);
   Circuit_init(&vg->vg_circuit);
+  vg->vg_interactive = 0;
   VGSecurity_init(&vg->vg_sec,0);
   vg->vg_timescale.ts_units = 0;
   vg->vg_timescale.ts_precision = 0;
   vg->vg_haveTScount = 0;
-  vg->vg_delayType = DT_TYP;
   vg->vg_noTimeViolations = 0;
   vg->vg_initTime = 0;
+  vg->vg_delayType = DT_TYP;
+  vg->vg_std = VSTD_1995;
 }
 
 static void usage()
@@ -464,9 +465,9 @@ void showLicense()
   printf("    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
   printf("    GNU General Public License for more details.\n");
   printf("\n");
-  printf("    You should have received a copy of the GNU General Public License\n");
-  printf("    along with this program; if not, write to the Free Software\n");
-  printf("    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n");
+  printf("    You should have received a copy of the GNU General Public License along\n");
+  printf("    with this program; if not, write to the Free Software Foundation, Inc.,\n");
+  printf("    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n");
   printf("\n");
   exit(0);
 }
@@ -505,7 +506,7 @@ int main(int argc,char *argv[])
    * Parse the command-line options.
    */
   while (argc > 0) {
-    while ((c = getopt(argc,argv,"eslqid:S:P:t:B:D:W:I:")) != EOF) {
+    while ((c = getopt(argc,argv,"eslqid:S:P:t:B:D:W:I:V:")) != EOF) {
       switch (c) {
       case 'e' :
 	dumpErrorMessages();
@@ -520,6 +521,12 @@ int main(int argc,char *argv[])
       case 'D' :
 	if (sscanf(optarg,"%u",&delete_hash_code) == 1)
 	  delete_on_load = 1;
+	break;
+      case 'V' :
+      	if (strncmp(optarg, "v1995", strlen("v1995")) == 0)
+		vgsim.vg_std = VSTD_1995;
+	else if (strncmp(optarg, "v2001", strlen("v2001")) == 0)
+		vgsim.vg_std = VSTD_2001;
 	break;
       case 'W' :
 	sscanf(optarg,"%d",&warning_mode);
@@ -542,7 +549,7 @@ int main(int argc,char *argv[])
 	vgsim.vg_baseDirectory = optarg;
 	break;
       case 't' :
-	vgsim.vg_topModuleName = optarg; 
+	vgsim.vg_topModuleName = optarg;
 	break;
       case 'd' :
 	if (strcasecmp(optarg,"min") == 0)
@@ -652,7 +659,7 @@ int main(int argc,char *argv[])
   }
 
   /*
-   * If we do not have a top module name, we must exit. 
+   * If we do not have a top module name, we must exit.
    */
   if (!vgsim.vg_topModuleName) {
     errorFile(&curPlace,ERR_NOTOP, "<none>");

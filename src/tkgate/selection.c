@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Wed Mar 18 05:13:57 2009
 ****************************************************************************/
@@ -23,8 +23,6 @@
   We have separate handling for single-gate and multi-gate selection
   mainly due to historical baggage.  One day, I will merge them into
   a single selection
-
-
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,8 +32,7 @@
 #include <string.h>
 #include <assert.h>
 #include "tkgate.h"
-
-void Comment_addLine(GCElement *g,const char *text);
+#include "comment.h"
 
 GSelection *new_GSelection()
 {
@@ -178,7 +175,7 @@ void sel_updateMenuState()
 
   if (TkGate.circuit && TkGate.circuit->es && hdl_isactive) {  /* GModuleDef_getType(TkGate.circuit->es->env) == MT_TEXTHDL*/
     DoTcl("HdlEditor::isselection");
-    sel_ok = (*TkGate.tcl->result == '1');
+    sel_ok = (Tcl_GetStringResult(TkGate.tcl)[0] == '1');
   } else {
     sel_ok = (TkGate.circuit->select != 0) || (TkGate.circuit->mg_selection != 0);
   }
@@ -227,7 +224,7 @@ static void sel_addGate(EditState *es,GCElement *g,int doDraw)
     S->s_hasAnchored = 1;
 
   if (doDraw) gate_draw(g,GD_NOWIRE);
-  g->selected = 1; 
+  g->selected = 1;
   if (doDraw) gate_draw(g,GD_NOWIRE);
 }
 
@@ -269,18 +266,18 @@ int sel_finish(EditState *es)
 
     if (w1 == w2) continue;	/* Process each each wire only once */
 
-    if (!w1->gate || !SHash_find(S->s_gates,w1->gate->ename)) 
+    if (!w1->gate || !SHash_find(S->s_gates,w1->gate->ename))
       w1 = 0;
 
-    if (!w2->gate || !SHash_find(S->s_gates,w2->gate->ename)) 
+    if (!w2->gate || !SHash_find(S->s_gates,w2->gate->ename))
       w2 = 0;
 
     if (w1 && w2) {
-      NHash_insert(S->s_wires,(int)w2,w2);
+      PHash_insert(S->s_wires,w2,w2);
     } else if (w1) {
-      NHash_insert(S->s_edgeWires,(int)w1,w1);
+      PHash_insert(S->s_edgeWires,w1,w1);
     } else if (w2) {
-      NHash_insert(S->s_edgeWires,(int)w2,w2);
+      PHash_insert(S->s_edgeWires,w2,w2);
     }
   }
 
@@ -350,11 +347,11 @@ int sel_select(EditState *es)
   if (width < 0) {
     width = -width;
     x = x - width;
-  } 
+  }
   if (height < 0) {
     height = -height;
     y = y - height;
-  } 
+  }
 
   for (gl = Hash_first(es->env->m_gates);gl;gl = Hash_next(es->env->m_gates,gl)) {
     GCElement *g = (GCElement*) HashElem_obj(gl);
@@ -398,7 +395,7 @@ void sel_unselectGate(EditState *es,GCElement *g)
 
   SHash_remove(S->s_gates,g->ename);
   g->selected = 0;
-  
+
   if (Hash_numElems(S->s_gates) == 0)
     sel_clear(es,1);
 
@@ -649,7 +646,7 @@ void sel_dropFixup(EditState *es)
 void sel_copy(EditState *es)
 {
   GModuleDef *m = es->env;
-  GModuleDef *cbm; 
+  GModuleDef *cbm;
 
   if (TkGate.circuit->cut_buffer) delete_GCutBuffer(TkGate.circuit->cut_buffer);
 
@@ -661,7 +658,7 @@ void sel_copy(EditState *es)
   if (hdl_isactive) {
     DoTcl("HdlEditor::dumpSelection");
     cbm->m_type = MT_TEXTHDL;
-    GModuleDef_saveText(cbm, TkGate.tcl->result);
+    GModuleDef_saveText(cbm, Tcl_GetStringResult(TkGate.tcl));
   } else {
     GModuleDef_copyInto(cbm, m, 0,0,1,0);
     GCutBuffer_computeBounds(TkGate.circuit->cut_buffer);
@@ -676,7 +673,7 @@ void sel_copy(EditState *es)
 void sel_copyAppend(EditState *es)
 {
   GModuleDef *m = es->env;
-  GModuleDef *cbm; 
+  GModuleDef *cbm;
 
   ob_touch(TkGate.circuit);
 
@@ -701,8 +698,8 @@ void sel_copyAppend(EditState *es)
 
   ob_touch(cbm);
   cbm->m_type = MT_TEXTHDL;
-  GModuleDef_allocText(cbm, strlen(cbm->m_text) + strlen(TkGate.tcl->result) + 1);
-  strcat(cbm->m_text, TkGate.tcl->result);
+  GModuleDef_allocText(cbm, strlen(cbm->m_text) + strlen(Tcl_GetStringResult(TkGate.tcl)) + 1);
+  strcat(cbm->m_text, Tcl_GetStringResult(TkGate.tcl));
 
   sel_updateMenuState();
 }
@@ -713,7 +710,7 @@ void sel_kill(EditState *es)
 
   if (hdl_isactive) {
     DoTcl("HdlEditor::isselection2");
-    if (*TkGate.tcl->result != '1') return;
+    if (Tcl_GetStringResult(TkGate.tcl)[0] != '1') return;
     sel_copy(es);
     DoTcl("HdlEditor::doDelete 0");
   } else {
@@ -881,12 +878,12 @@ void sel_delete(EditState *es)
   if (TkGate.circuit->mg_selection) {
     HashElem *gl;
     SHash *H = TkGate.circuit->mg_selection->s_gates;
-    NHash *delGates = new_NHash();
+    PHash *delGates = new_PHash();
 
     for (gl = Hash_first(H);gl;gl = Hash_next(H,gl)) {
       GCElement *g = (GCElement*) HashElem_obj(gl);
       if (g->typeinfo->Code != GC_JOINT)
-	NHash_insert(delGates,(int)g,g);
+	PHash_insert(delGates,g,g);
     }
 
     for (gl = Hash_first(delGates);gl;gl = Hash_next(delGates,gl)) {
@@ -897,7 +894,7 @@ void sel_delete(EditState *es)
       gate_delete(g,es->env,0);
     }
 
-    delete_NHash(delGates);
+    delete_PHash(delGates);
 
     delete_GSelection(TkGate.circuit->mg_selection);
     TkGate.circuit->mg_selection = 0;
@@ -952,7 +949,7 @@ void sel_alignHorz(EditState *es)
   HashElem *E;
   SHash *GH;
   int y,n;
-    
+
   if (!TkGate.circuit->mg_selection) return;
 
   n = y = 0;
@@ -980,7 +977,7 @@ void sel_alignVert(EditState *es)
   HashElem *E;
   SHash *GH;
   int x,n;
-    
+
   if (!TkGate.circuit->mg_selection) return;
 
   n = x = 0;
@@ -1015,7 +1012,7 @@ int sel_writeToFile(const char *fileName)
   FILE *f;
 
   GH = TkGate.circuit->cut_buffer->cb_buf->m_gates;
-    
+
   f = fopen(fileName,"w");
   if (!f) return -1;
 

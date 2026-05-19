@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Tue Mar 17 06:49:35 2009
 ****************************************************************************/
@@ -64,7 +64,7 @@ int Timescale_unitsToCode(const char *units)
   for (i = 0;i < numUnitCodes;i++) {
     if (strcmp(units, unitCodes[i]) == 0) return i;
   }
-  return -1;  
+  return -1;
 }
 
 simtime_t Timescale_parse(int num,const char *units)
@@ -132,6 +132,9 @@ Circuit *new_Circuit()
   c->rot = 0;
   c->mode = MODE_MOVE;
   c->c_isNewFile = 0;
+  c->no_set_modify = 0;
+  c->org_x = 0;
+  c->org_y = 0;
 
   Circuit_initOptions(c);
   Circuit_setLocale(c,TkGate.locale);
@@ -386,8 +389,6 @@ int Circuit_isSelection(Circuit *c)
     return 0;
 }
 
-
-
 void Circuit_loadLibrary(Circuit *c,const char *name)
 {
   if (tkgate_currentMode() != MM_EDIT)
@@ -407,7 +408,7 @@ void Circuit_loadLibrary(Circuit *c,const char *name)
 void Circuit_unloadLibrary(Circuit *c,const char *name)
 {
   HashElem *he;
-  NHash *dhash;
+  PHash *dhash;
 
   /*
    * Make sure "name" is a loaded library.
@@ -415,9 +416,7 @@ void Circuit_unloadLibrary(Circuit *c,const char *name)
   if (!SHash_find(TkGate.libraries, name))
     return;
 
-  dhash = new_NHash_noob();
-
-  SHash_remove(TkGate.libraries, name);
+  dhash = new_PHash_noob();
 
   /*
    * Get list of modules to be deleted.
@@ -425,7 +424,7 @@ void Circuit_unloadLibrary(Circuit *c,const char *name)
   for (he = Hash_first(TkGate.circuit->moduleTable);he;he = Hash_next(TkGate.circuit->moduleTable,he)) {
     GModuleDef *M = (GModuleDef*) HashElem_obj(he);
     if (M->m_isLib && strcmp(M->m_libName,name) == 0) {
-      NHash_insert(dhash,(int)M,M);
+      PHash_insert(dhash,M,M);
     }
   }
 
@@ -440,7 +439,8 @@ void Circuit_unloadLibrary(Circuit *c,const char *name)
     M->m_protEdit = 0;
     env_delete(TkGate.circuit->es,M->m_name);
   }
-  delete_NHash(dhash);
+  delete_PHash(dhash);
+  SHash_remove(TkGate.libraries, name);
 }
 
 void Circuit_unloadAllLibraries(Circuit *c)

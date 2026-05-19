@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #include <assert.h>
 #include <ctype.h>
@@ -95,25 +95,6 @@ void delete_Value(Value *S)
 #endif
 }
 
-/*
- * Does S contain only 1s and 0s?
- */
-int Value_isLogic(Value *S)
-{
-  int wc = SSNUMWORDS(S->nbits);
-  unsigned mask = SSWORDMASK;
-  int i;
-
-  for (i = 0;i < wc;i++) {
-    if ((S->nbits & SSBITMASK))
-      mask = LMASK((S->nbits & SSBITMASK));
-
-    if ((S->flt[i] & mask)) return 0;
-  }
-
-  return 1;
-}
-
 /*****************************************************************************
  *
  * Make a value stored in the one[] array consistant in the other arrays.
@@ -132,7 +113,6 @@ void Value_normalize(Value *r)
     r->flt[i]  = 0;
   }
 }
-
 
 /*
          Logic values
@@ -206,7 +186,7 @@ int Value_isPartZero(Value *A,int lowz)
   unsigned mask2 = (A->nbits&SSBITMASK) ? LMASK((A->nbits & SSBITMASK)) : SSWORDMASK;
   int i;
 
-  if (wc2 == wc) 
+  if (wc2 == wc)
     mask = (~mask) & mask2;
   else
     mask = (~mask);
@@ -229,7 +209,6 @@ int Value_isPartZero(Value *A,int lowz)
 
   return 1;
 }
-
 
 /*****************************************************************************
  *
@@ -272,7 +251,7 @@ int Value_isEqual(Value *A,Value *B)
   } else if (A->nbits < B->nbits) {
     return Value_isPartZero(B,A->nbits);
   } else
-    return 1;  
+    return 1;
 }
 
 /*****************************************************************************
@@ -290,7 +269,7 @@ transtype_t Value_transitionType(Value *A,Value *B)
     if (fromSym == toSym) return TT_NONE;
     if (toSym == SYM_ZERO) return TT_NEGEDGE;
     if (fromSym == SYM_ONE && toSym != SYM_FLOAT) return TT_NEGEDGE;
-    return TT_POSEDGE;						    
+    return TT_POSEDGE;
   } else {
     if (Value_isEqual(A,B))
       return TT_NONE;
@@ -359,10 +338,7 @@ void Value_lone(Value *S)
   S->zero[0] &= ~1;
 }
 
-/*
-  return non-zero if S has only 0 and 1 bits
- */
-int Value_isValue(Value *S)
+int Value_isLogic(Value *S)
 {
   register int i;
   register unsigned mask = SSWORDMASK;
@@ -371,16 +347,12 @@ int Value_isValue(Value *S)
   for (i = 0;i < wc;i++) {
     if (i == wc-1 && (S->nbits & SSBITMASK))
       mask = LMASK(S->nbits);
-      
 
     if ((S->flt[i] & mask)) return 0;
   }
   return 1;
 }
 
-/*
-  return non-zero if S is zero
- */
 int Value_isZero(Value *S)
 {
   register int i;
@@ -390,16 +362,85 @@ int Value_isZero(Value *S)
   for (i = 0;i < wc;i++) {
     if (i == wc-1 && (S->nbits & SSBITMASK))
       mask = LMASK(S->nbits);
-      
+
     if (((S->flt[i] & mask) != 0)
 	|| ((S->one[i] & mask) != 0)
 	|| ((S->zero[i] & mask) != mask))
       return 0;
-			   
+
   }
   return 1;
 }
 
+int Value_isFloat(Value *S)
+{
+  register int i;
+  register unsigned mask = SSWORDMASK;
+  register int wc = SSNUMWORDS(S->nbits);
+
+  for (i = 0;i < wc;i++) {
+    if (i == wc-1 && (S->nbits & SSBITMASK))
+      mask = LMASK(S->nbits);
+
+    if (((S->flt[i] & mask) != mask)
+	|| ((S->one[i] & mask) != 0)
+	|| ((S->zero[i] & mask) != 0))
+      return 0;
+  }
+  return 1;
+}
+
+int Value_isUnknown(Value *S)
+{
+  register int i;
+  register unsigned mask = SSWORDMASK;
+  register int wc = SSNUMWORDS(S->nbits);
+
+  for (i = 0;i < wc;i++) {
+    if (i == wc-1 && (S->nbits & SSBITMASK))
+      mask = LMASK(S->nbits);
+
+    if (((S->flt[i] & mask) != mask)
+	|| ((S->one[i] & mask) != mask)
+	|| ((S->zero[i] & mask) != mask))
+      return 0;
+  }
+  return 1;
+}
+
+Boolean Value_hasUnknown(Value *S)
+{
+	int i, wordCount;
+
+	wordCount = SSNUMWORDS(S->nbits);
+
+	for (i = 0; i < wordCount; ++i) {
+		if (i == wordCount-1 && (S->nbits & SSBITMASK)) {
+			unsigned mask = LMASK(S->nbits);
+			if (S->flt[i] & S->zero[i] & S->one[i] & mask)
+				return TRUE;
+		} else if (S->flt[i] & S->zero[i] & S->one[i])
+			return TRUE;
+	}
+	return FALSE;
+}
+
+Boolean Value_hasFloat(Value *S)
+{
+	int i, wordCount;
+
+	wordCount = SSNUMWORDS(S->nbits);
+
+	for (i = 0; i < wordCount; ++i) {
+		if (i == wordCount-1 && (S->nbits & SSBITMASK)) {
+			unsigned mask = LMASK(S->nbits);
+			if (S->flt[i] & ~(S->zero[i] | S->one[i]) & mask)
+				return TRUE;
+		} else if (S->flt[i] & ~(S->zero[i] | S->one[i]))
+			return TRUE;
+	}
+	return FALSE;
+}
 
 void Value_xclear(Value *S)
 {
@@ -444,7 +485,6 @@ void Value_putBitSym(Value *S,int bit,int p)
   if ((p & 0x2)) S->one[w] |= b; else S->one[w] &= ~b;
   if ((p & 0x4)) S->flt[w] |= b; else S->flt[w] &= ~b;
 }
-
 
 /*****************************************************************************
  *
@@ -508,10 +548,9 @@ void Value_resize(Value *R,int nbits)
   }
 }
 
-
 int Value_toInt(Value *S,unsigned *I)
 {
-  if (!Value_isValue(S)) return -1;
+  if (!Value_isLogic(S)) return -1;
 
   if (Value_isReal(S))
     *I = (unsigned) *(real_t*)&S->one[0];
@@ -523,7 +562,7 @@ int Value_toInt(Value *S,unsigned *I)
 
 int Value_toReal(Value *S,real_t *n)
 {
-  if (!Value_isValue(S)) return -1;
+  if (!Value_isLogic(S)) return -1;
 
   if (Value_isReal(S)) {
     *n = *(real_t*)&S->one[0];
@@ -536,7 +575,7 @@ int Value_toReal(Value *S,real_t *n)
 
 int Value_toTime(Value *S,simtime_t *I)
 {
-  if (!Value_isValue(S)) return -1;
+  if (!Value_isLogic(S)) return -1;
 
 #if SSWORDSIZE == 64
   *I = S->one[0] & LMASK(S->nbits);
@@ -570,7 +609,7 @@ int Value_convertBits(Value *S,const char *A,int nbits)
       return_value = -1;
       p = SYM_ZERO;
     }
-    
+
     Value_putBitSym(S,i,p);
   }
   Value_extend(S,d);
@@ -970,19 +1009,31 @@ static int Value_getstr_str(Value *S,char *p,int prefix)
  *     str		Buffer to which to write string.
  *
  *****************************************************************************/
-static int Value_getstr_int(Value *S,char *p)
+static int Value_getstr_int(Value *S,char *str)
 {
-  if (Value_isValue(S)) {
+  /*
+   * IEEE Std 1364-2001 17.1.1.4
+   */
+  if (Value_isUnknown(S))
+	sprintf(str, "x");
+  else if (Value_isFloat(S))
+	sprintf(str, "z");
+  else if (Value_hasUnknown(S))
+	sprintf(str, "X");
+  else if (Value_hasFloat(S))
+	sprintf(str, "Z");
+  else if (Value_isLogic(S)) {
     if (Value_nbits(S) <= SSWORDSIZE) {
-      sprintf(p,"%u",S->one[0]&LMASK(Value_nbits(S)));
+      sprintf(str,"%u",S->one[0]&LMASK(Value_nbits(S)));
     } else {
       int wc = SSNUMWORDS(S->nbits);
 
       S->one[wc-1] &= LMASK(Value_nbits(S));
-      multint_getstr(S->one,wc,p,1024);
+      multint_getstr(S->one,wc,str,1024);
     }
   } else
-    sprintf(p,"x");
+  /** @TODO generate Verga error  */
+    sprintf(str,"ERROR");
 
   return 0;
 }
@@ -990,7 +1041,7 @@ static int Value_getstr_int(Value *S,char *p)
 #if 0
 static int Value_getstr_time(Value *S,char *p)
 {
-  if (Value_isValue(S)) {
+  if (Value_isLogic(S)) {
 #if SSWORDSIZE == 64
     sprintf(p,"%u",S->one[0]&LMASK(Value_nbits(S)));
 #else
@@ -1012,7 +1063,7 @@ static int Value_getstr_dec(Value *S,char *p,int prefix)
   if (prefix)
     p += sprintf(p,"%d'd",Value_nbits(S));
 
-  if (Value_isValue(S)) {
+  if (Value_isLogic(S)) {
     if (Value_nbits(S) <= SSWORDSIZE)
       sprintf(p,"%u",S->one[0]&LMASK(Value_nbits(S)));
     else
@@ -1132,7 +1183,7 @@ static int Value_getstr_oct(Value *S,char *p,int prefix)
 
 static int Value_getstr_real(Value *S,char *p,int useG)
 {
-  if (!Value_isValue(S))
+  if (!Value_isLogic(S))
     return sprintf(p,"NaN");
   else {
     real_t n = *(real_t*)&S->one[0];
@@ -1215,7 +1266,7 @@ int Value_getstr(Value *S,char *p)
   }
 
   /*
-   * Display as a decimal value 
+   * Display as a decimal value
    */
   if ((S->flags & SF_INT)) {
     Value_getstr_int(S,p);
@@ -1281,13 +1332,13 @@ int Value_getvstr(Value *S,char *p)
  * Convert state value to a string with formatting.
  *
  * Parameters:
- *     S	State value to convert 
+ *     S	State value to convert
  *     fmt	A format string (see below)
  *     p	Buffer in which to write formatted string
  *
  * 'fmt' must be a single Verilog format string.  The first character must be
  * a '%' and the last character must be the type control character.
- * 
+ *
  *****************************************************************************/
 int Value_format(Value *S,const char *fmt,char *p)
 {
@@ -1484,11 +1535,11 @@ transtype_t Value_copyRange(Value *R,int rl,Value *A,int ah,int al)
 
     R->flags |= A->flags;
 
-    if (fromSym == toSym) 
+    if (fromSym == toSym)
       tt = TT_NONE;
-    else if (toSym == SYM_ZERO) 
+    else if (toSym == SYM_ZERO)
       tt = TT_NEGEDGE;
-    else if (fromSym == SYM_ONE && toSym != SYM_FLOAT) 
+    else if (fromSym == SYM_ONE && toSym != SYM_FLOAT)
       tt = TT_NEGEDGE;
     else
       tt = TT_POSEDGE;
@@ -1540,24 +1591,22 @@ transtype_t Value_copyRange(Value *R,int rl,Value *A,int ah,int al)
       /*****************************************************************************
        * Up shifting
        *****************************************************************************/
-      int rl_w = rl >> SSWORDSHIFT;
-      int rl_b = rl & SSBITMASK;
-      int al_w = al >> SSWORDSHIFT;
-      int al_b = al & SSBITMASK;
-      int rh_w = rh >> SSWORDSHIFT;
-      int rh_b = rh & SSBITMASK;
-      int dst_w;
-      int src_w;
       int b_up = (rl_b - al_b) & SSBITMASK;			/* Shift up bits */
       int b_dn = SSWORDSIZE - b_up;			/* Shift down for next word */
 
       src_w = al_w;
       for (dst_w = rl_w; dst_w <= rh_w; dst_w++, src_w++) {
 	unsigned aone, azero, aflt, rone, rzero, rflt, mask;
-
-	aone  = A->one[src_w] << b_up;
-	azero = A->zero[src_w] << b_up;
-	aflt  = A->flt[src_w] << b_up;
+    if (src_w < A->nalloc) {
+	  aone  = A->one[src_w] << b_up;
+	  azero = A->zero[src_w] << b_up;
+	  aflt  = A->flt[src_w] << b_up;
+    }
+    else {
+      aone  = 0;
+	  azero = 0;
+	  aflt  = 0;
+    }
 	if (src_w > 0) {
 	  aone  |= A->one[src_w-1] >> b_dn;
 	  azero |= A->zero[src_w-1] >> b_dn;
@@ -1589,15 +1638,7 @@ transtype_t Value_copyRange(Value *R,int rl,Value *A,int ah,int al)
       /*****************************************************************************
        * Down shifting
        *****************************************************************************/
-      int rl_w = rl >> SSWORDSHIFT;
-      int rl_b = rl & SSBITMASK;
-      int al_w = al >> SSWORDSHIFT;
-      int al_b = al & SSBITMASK;
-      int rh_w = rh >> SSWORDSHIFT;
-      int rh_b = rh & SSBITMASK;
       int ah_w = ah >> SSWORDSHIFT;
-      int dst_w;
-      int src_w;
       int b_dn = (al_b - rl_b) & SSBITMASK;			/* Shift down bits */
       int b_up = SSWORDSIZE - b_dn;			/* Shift up for next word */
 
@@ -1608,7 +1649,7 @@ transtype_t Value_copyRange(Value *R,int rl,Value *A,int ah,int al)
 	aone  = A->one[src_w] >> b_dn;
 	azero = A->zero[src_w] >> b_dn;
 	aflt  = A->flt[src_w] >> b_dn;
-	if (src_w <= ah_w) {
+	if ( (src_w <= ah_w) && (src_w+1 < A->nalloc) ) {
 	  aone  |= A->one[src_w+1] << b_up;
 	  azero |= A->zero[src_w+1] << b_up;
 	  aflt  |= A->flt[src_w+1] << b_up;
@@ -1650,7 +1691,7 @@ transtype_t Value_copyRange(Value *R,int rl,Value *A,int ah,int al)
  *      B		Wire B
  *
  *
- *WIRE                one                zero                flt              
+ *WIRE                one                zero                flt
  *   0 1 x z L H        0 1 x z L H        0 1 x z L H        0 1 x z L H  01z
  *  +-----------       +-----------       +-----------       +-----------  ---
  * 0|0 x x 0 0 x      0|0 1 1 0 0 1      0|1 1 1 1 1 1      0|0 1 1 0 0 1  100
@@ -1686,7 +1727,7 @@ void Value_wire(Value *R,Value *A,Value *B)
  *      A		Wire A
  *      B		Wire B
  *
- *WAND/TRIAND        one                zero                flt              
+ *WAND/TRIAND        one                zero                flt
  *   0 1 x z L H       0 1 x z L H        0 1 x z L H        0 1 x z L H  01z
  *  +-----------      +-----------       +-----------       +-----------  ---
  * 0|0 0 0 0 0 0     0|0 0 0 0 0 0      0|1 1 1 1 1 1      0|0 0 0 0 0 0  100
@@ -1723,7 +1764,7 @@ void Value_wand(Value *R,Value *A,Value *B)
  *      A		Wire A
  *      B		Wire B
  *
- *WOR/TRIOR          one                zero                flt              
+ *WOR/TRIOR          one                zero                flt
  *   0 1 x z L H       0 1 x z L H        0 1 x z L H        0 1 x z L H  01z
  *  +-----------      +-----------       +-----------       +-----------  ---
  * 0|0 1 x 0 0 x     0|0 1 1 0 0 1      0|1 0 1 1 1 1      0|0 0 1 0 0 1  100
@@ -1760,7 +1801,7 @@ void Value_wor(Value *R,Value *A,Value *B)
  *      A		Wire A
  *      B		Wire B
  *
- *TRI0          
+ *TRI0
  *   0 1 x z L H
  *  +-----------
  * 0|0 x x 0 0 x
@@ -1796,7 +1837,7 @@ void Value_tri0(Value *R,Value *A,Value *B)
  *      A		Wire A
  *      B		Wire B
  *
- *TRI1          
+ *TRI1
  *   0 1 x z L H
  *  +-----------
  * 0|0 x x 0 0 x
@@ -1833,8 +1874,8 @@ void Value_tri1(Value *R,Value *A,Value *B)
  *      B		Current net value
  *
  *TRIREG
- *          (A)          one                zero                flt              
- *       0 1 x z L H       0 1 x z L H        0 1 x z L H        0 1 x z L H  01z 
+ *          (A)          one                zero                flt
+ *       0 1 x z L H       0 1 x z L H        0 1 x z L H        0 1 x z L H  01z
  *      +-----------      +-----------       +-----------       +-----------  ---
  *     0|0 1 x 0 0 x     0|0 1 1 0 0 1      0|1 0 1 1 1 1      0|0 0 1 0 0 1  100
  *     1|0 1 x 1 x 1     1|0 1 1 1 1 1      1|1 0 1 0 1 0      1|0 0 1 0 1 0  010
@@ -1963,7 +2004,7 @@ void Value_w_shift(Value *R,Value *I,int n,int in1,int in0,int inZ)
 
 /*****************************************************************************
  *
- * same, for nbits > SSWORDSIZE 
+ * same, for nbits > SSWORDSIZE
  *
  *****************************************************************************/
 void Value_shift(Value *R,Value *I,int n,int in1,int in0,int inZ) {
@@ -1975,9 +2016,9 @@ void Value_shift(Value *R,Value *I,int n,int in1,int in0,int inZ) {
   int wc = SSNUMWORDS(R->nbits);
   int i;
 
-  /* 
+  /*
      src represents the word we're copying in from
-     prv is the one before that 
+     prv is the one before that
      if there aren't enough words there, they point to in
 
      for a left shift:

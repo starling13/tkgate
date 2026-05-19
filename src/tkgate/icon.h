@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #ifndef __icon_h
 #define __icon_h
@@ -40,8 +40,7 @@ typedef struct {
   int 		width,height;		/* Base size of pixmap */
 } PixmapZoomSet;
 
-
-Pixmap Pixmap_register(char *name,unsigned char bits[],int w,int h);
+Pixmap Pixmap_register(char *name,unsigned char bits[],unsigned w,unsigned h);
 Pixmap Pixmap_registerFromFile(char *name,char *file);
 Pixmap Pixmap_registerFromFileWithParms(char *name,char *file,int*,int*,int*,int*);
 Pixmap Pixmap_find(char *name);

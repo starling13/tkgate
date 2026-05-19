@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Mon Jan 19 18:17:34 2009
 ****************************************************************************/
@@ -88,7 +88,7 @@ GGateInfo gate_roller_info = {
 
   {{"S O",	{"gm.alu",0},		{"gm.alu.roll",0,"shift",400},	"gat_make ROLL"},
    {0}},
-  
+
 
   roll_iconDims,
 
@@ -125,7 +125,8 @@ GGateInfo gate_roller_info = {
 
 static void Roll_WriteCellDef(FILE *f,GCellSpec *gcs)
 {
-  GGateInfo *gi = gcs->gc_info;
+  /** @TODO to check for necessity */
+  /* GGateInfo *gi = gcs->gc_info; */
   int numBits = gcs->gc_numBits;
   const char *invSpec = gcs->gc_invSpec;
   int shiftSelBits = required_bits(numBits);

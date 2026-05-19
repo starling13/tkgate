@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Sat Sep 26 18:25:03 2009
 ****************************************************************************/
@@ -123,7 +123,7 @@ GGateInfo gate_ram_info = {
   {1},
 
   {"Dout","Dread","Dwrite","Daddr_setup","Daddr_hold","Ddata_hold",0},
-  
+
   RamRom_Make,
   Ram_WriteCellDef,
   Generic_Init,
@@ -217,7 +217,7 @@ void RamRom_VerSave(FILE *f,GCElement *g)
 }
 
 /*****************************************************************************
- * 
+ *
  * Generate primitive cell definition for rams.
  *
  * Parameters:
@@ -233,10 +233,12 @@ void RamRom_VerSave(FILE *f,GCElement *g)
  *****************************************************************************/
 static void Ram_WriteCellDef(FILE *f,GCellSpec *gcs)
 {
-  GGateInfo *gi = gcs->gc_info;
+  /** @TODO to remove */
+  /* GGateInfo *gi = gcs->gc_info; */
   int AnumBits = gcs->gc_multiPad;	/* Hack for ROM/RAM gates */
   int DnumBits = gcs->gc_numBits;
-  const char *invSpec = gcs->gc_invSpec;
+  /** @TODO to remove */
+  /* const char *invSpec = gcs->gc_invSpec; */
   PrimParm primParm;
 
   PrimParm_init(&primParm);

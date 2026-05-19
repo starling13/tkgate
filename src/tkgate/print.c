@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
     Last edit by hansen on Wed Jan 28 08:41:34 2009
 ****************************************************************************/
@@ -41,10 +41,11 @@
  *
  *****************************************************************************/
 
-
 #include "tkgate.h"
-#include <sys/time.h>
+
+#include <assert.h>
 #include <math.h>
+#include <pwd.h>
 
 /*
  * Font change codes
@@ -121,7 +122,7 @@ char *gateprolog[] = {
 
 char *gateps_copyright[] = {
   "%",
-  "% Copyright (C) 1987-2005 by Jeffery P. Hansen",
+  "% Copyright (C) 1987-2015 by Jeffery P. Hansen",
   "%    This program (the Postscript Prolog) is free software; you can redistribute",
   "%    it and/or modify it under the terms of the GNU General Public License",
   "%    as published by the Free Software Foundation; either version 2 of the",
@@ -132,9 +133,9 @@ char *gateps_copyright[] = {
   "%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
   "%    GNU General Public License for more details.",
   "%",
-  "%    You should have received a copy of the GNU General Public License",
-  "%    along with this program; if not, write to the Free Software",
-  "%    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.",
+  "%    You should have received a copy of the GNU General Public License along",
+  "%    with this program; if not, write to the Free Software Foundation, Inc.,",
+  "%    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.",
   "%",
   0
 };
@@ -236,7 +237,7 @@ PaperSize paperSizes[] = {
   {0}
 };
 
- 
+
 const char *recipe_list[] = {
   /* Receipe 1 */
     "%	Pancakes - one serving\n"
@@ -416,7 +417,7 @@ char *trimChars(char *buf,char *s,char *trim)
 
 
 /*****************************************************************************
- * 
+ *
  * Get the width of a postscript string in points.
  *
  * Parameters:
@@ -425,7 +426,7 @@ char *trimChars(char *buf,char *s,char *trim)
  *     len		Length of string
  *
  * Returns:		String width in points.
- * 
+ *
  *****************************************************************************/
 int PSStringWidth(HtmlFont *F,const char *s,int len)
 {
@@ -584,13 +585,13 @@ void delete_GPage(GPage *P)
  *     incLib	Non-zero if top-level modules should be included.
  *
  *****************************************************************************/
-static int GPrint_getUsedMods(NHash *H,GModLayout **L,GModuleDef *M,int incLib)
+static int GPrint_getUsedMods(PHash *H,GModLayout **L,GModuleDef *M,int incLib)
 {
   int num = 0;
   HashElem *E;
 
-  if (NHash_find(H,(int)M)) return 0;
-  NHash_insert(H,(int)M,M);
+  if (PHash_find(H,M)) return 0;
+  PHash_insert(H,M,M);
 
   if (!M->m_isLib || incLib)
     L[num++] = new_GModLayout(M);
@@ -729,13 +730,13 @@ GPrint *new_GPrint(GPrintOpt *PO)
 	}
       }
     } else if (strcmp(PO->po_select,"use") == 0) {
-      NHash *H = new_NHash();
+      PHash *H = new_PHash();
 
       P->p_mods = (GModLayout**) ob_malloc(Hash_numElems(TkGate.circuit->moduleTable)*sizeof(GModLayout*),"GModLayout*[]");
       assert(P->p_mods);
 
       P->p_numMods = GPrint_getUsedMods(H,P->p_mods,TkGate.circuit->root_mod,incLib);
-      delete_NHash(H);
+      delete_PHash(H);
 
     } else if (strcmp(PO->po_select,"sel") == 0) {
       char *T, *buf;
@@ -934,7 +935,7 @@ void GPrint_outputPreamble(GPrint *P,int do_gates)
 
   for (i = 0;gateps_copyright[i];i++)
     fprintf(P->p_f,"%s\n",gateps_copyright[i]);
-  
+
   if (TkGate.japaneseMode) {
     for (i = 0;kanji_support_prolog[i];i++)
       fprintf(P->p_f,"%s\n",kanji_support_prolog[i]);
@@ -1043,7 +1044,7 @@ static void GPrint_printModuleCPath(GPrint *P,GModLayout *L)
 	fprintf(P->p_f,"8 setlinewidth\n");
 	fprintf(P->p_f,".5 setgray\n");
 	fprintf(P->p_f,"newpath\n");
-      
+
 	for (n = w->nodes;n;n = n->out) {
 	  int x,y;
 
@@ -1058,7 +1059,7 @@ static void GPrint_printModuleCPath(GPrint *P,GModLayout *L)
 	}
 	fprintf(P->p_f,"stroke\n");
 	fprintf(P->p_f,"grestore\n");
-      }      
+      }
     }
   }
 }
@@ -1068,7 +1069,7 @@ void GPrint_printLabelsAndSizes(GPrint *P,GModLayout *L,GWire *w)
   GWireNode *n;
   int x,y,p;
   char label[STRMAX];
-  
+
   GNet_getDisplayLabel(w->net, label, STRMAX, DLM_GET_ALWAYS);
 
   for (n = w->nodes;n && n->out;n = n->out) {
@@ -1083,7 +1084,7 @@ void GPrint_printLabelsAndSizes(GPrint *P,GModLayout *L,GWire *w)
     }
     if (n->isLabeled) {
       GWireNode_getLabelPos(n,w->net,&x,&y,&p);
-      
+
       fprintf(P->p_f,"(%s) %d %d %d wirelabel\n",label,p,x,y);
 
     }
@@ -1311,10 +1312,10 @@ static void GPrint_printModule(GPrint *P,GModLayout *L,double scale,double xoff,
  * Parameters:
  *     P
  *     L
- * 
+ *
  * When pages are partitioned, we include a little overlap on the edges to
  * compensate for any gates that might have been cut in two.
- * 
+ *
  *         V
  * +-------+-+-------+
  * |       | |       |
@@ -1492,7 +1493,7 @@ static void GPrint_printIndexPage(GPrint *P,GPage *PG)
       fprintf(P->p_f,"%d %d moveto (%d) show\n",x+PIDX_PGCOLSEP,y,start_page[i]);
     else
       fprintf(P->p_f,"%d %d moveto (%d-%d) show\n",x+PIDX_PGCOLSEP,y,start_page[i],end_page[i]);
-    
+
   }
 
   fprintf(P->p_f,"EP\n");
@@ -1519,35 +1520,35 @@ static void HGNode_addChild(HGNode *G,HGNode *CG)
   G->hg_children = CG;
 }
 
-static HGNode *build_HGNodeGraph(GModuleDef *M,NHash *H)
+static HGNode *build_HGNodeGraph(GModuleDef *M,PHash *H)
 {
   HGNode *G;
   HashElem *E;
-  NHash *LH = new_NHash();
+  PHash *LH;
 
   G = new_HGNode(M);
+  LH = new_PHash();
 
-  if (NHash_find(H,(unsigned)M)) {
+  if (PHash_find(H,M)) {
     G->hg_expanded = 0;
   } else {
     G->hg_expanded = 1;
-    NHash_insert(H,(unsigned)M,M);
+    PHash_insert(H,M,M);
     for (E = Hash_first(M->m_gates);E;E = Hash_next(M->m_gates,E)) {
       GCElement *g = (GCElement*) HashElem_obj(E);
       if (GCElement_isModule(g)) {
 	GModuleDef *CM = env_findModule(g->u.block.moduleName);
 	HGNode *CG;
 
-	if (CM && !NHash_find(LH,(unsigned)CM)) {
-	  NHash_insert(LH,(unsigned)CM,CM);
+	if (CM && !PHash_find(LH,CM)) {
+	  PHash_insert(LH,CM,CM);
 	  CG = build_HGNodeGraph(CM,H);
 	  HGNode_addChild(G,CG);
 	}
       }
     }
   }
-
-  delete_NHash(LH);
+  delete_PHash(LH);
 
   return G;
 }
@@ -1560,6 +1561,8 @@ static void unbuild_HGNodeGraph(HGNode *G)
   ob_free(G);
 }
 
+/** @TODO to remove */
+/*
 static void HGNodeGraph_print(HGNode *G,int level)
 {
   int i;
@@ -1571,6 +1574,7 @@ static void HGNodeGraph_print(HGNode *G,int level)
   HGNodeGraph_print(G->hg_children,level+1);
   HGNodeGraph_print(G->hg_nextSibling,level);
 }
+*/
 
 static int HGNode_translatePoint(int *x,int *y)
 {
@@ -1637,9 +1641,10 @@ static int HGNodeGraph_draw(HGNode *G,GPrint *P,int x,int y)
 
 static void GPrint_printGraphPage(GPrint *P,GPage *PG)
 {
-  NHash *H = new_NHash();
-  HGNode *G = 0;
+  PHash *H;
+  HGNode *G;
 
+  H = new_PHash();
   G = build_HGNodeGraph(TkGate.circuit->root_mod,H);
 
   fprintf(P->p_f,"(%d of %d) (<hierarchy>) BP\n",PG->pg_num,P->p_numPages);
@@ -1655,7 +1660,7 @@ static void GPrint_printGraphPage(GPrint *P,GPage *PG)
 #endif
 
   unbuild_HGNodeGraph(G);
-  delete_NHash(H);
+  delete_PHash(H);
 }
 
 void GPrint_outputPages(GPrint *P)
@@ -1708,7 +1713,7 @@ void GPrint_setupEPSFPage(GPrint *P)
   P->p_pages = (GPage**) ob_malloc(sizeof(GPage*),"GPage*[]");
   assert(P->p_pages);
 
-  
+
   L->l_xbase = EPSF_MINX;
   L->l_ybase = EPSF_MINY;
   L->l_width = L->l_xmax-L->l_xmin;
@@ -1729,8 +1734,8 @@ void GPrint_setupEPSFPage(GPrint *P)
  */
 void GPrint_hsortPages(GPrint *P)
 {
-  NHash *H = new_NHash();	/* Hash table for building hierarchy graph */
-  NHash *Mhash = new_NHash();	/* Hash table for modules to be printed */
+  PHash *H;	/* Hash table for building hierarchy graph */
+  PHash *Mhash;	/* Hash table for modules to be printed */
   HGNode *G = 0;
   List Q;		/* NOTE: lists do not have undo management.  We must clean up everything here. */
   GModLayout *L;
@@ -1738,12 +1743,13 @@ void GPrint_hsortPages(GPrint *P)
   int i;
 
   List_init(&Q);
+  H = new_PHash();
+  Mhash = new_PHash();
 
   for (i = 0;i < P->p_numMods;i++) {
     L = P->p_mods[i];
-    NHash_insert(Mhash,(unsigned)L->l_mod,L);
+    PHash_insert(Mhash,L->l_mod,L);
   }
-
 
   //  P->p_numMods;
   G = build_HGNodeGraph(TkGate.circuit->root_mod,H);
@@ -1758,10 +1764,10 @@ void GPrint_hsortPages(GPrint *P)
       List_addToTail(&Q,G);
     }
 
-    if ((L = (GModLayout*) NHash_find(Mhash,(unsigned)M))) {
+    if ((L = (GModLayout*) PHash_find(Mhash,M))) {
       if (N < P->p_numMods)
 	P->p_mods[N++] = L;
-      NHash_remove(Mhash,(unsigned)M);
+      PHash_remove(Mhash,M);
     }
   }
 
@@ -1782,8 +1788,8 @@ void GPrint_hsortPages(GPrint *P)
 
   List_uninit(&Q);
   unbuild_HGNodeGraph(G);
-  delete_NHash(H);
-  delete_NHash(Mhash);
+  delete_PHash(Mhash);
+  delete_PHash(H);
 }
 
 /*****************************************************************************
@@ -1872,7 +1878,7 @@ void GPrint_setupPages(GPrint *P)
 	int linesPerPage = (P->p_uHeight-2*PAGE_MODMARGIN)/(int)(1.2*hdl_font.points);
 	int numLines = GModuleDef_numHdlLines(L->l_mod);
 	int numPages = (numLines+linesPerPage-1)/linesPerPage;
-	
+
 	L->l_numCols = 1;
 	L->l_numRows = numPages;
 	numLarge += numPages;

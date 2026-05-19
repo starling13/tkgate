@@ -1,5 +1,5 @@
 /****************************************************************************
-    Copyright (C) 1987-2005 by Jeffery P. Hansen
+    Copyright (C) 1987-2015 by Jeffery P. Hansen
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -11,13 +11,14 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ****************************************************************************/
 #ifndef __misc_h
 #define __misc_h
 
+__BEGIN_DECLS
 /*
  * Functions that we may need to provide ourself if they are not available
  * under this operating system.
@@ -55,7 +56,7 @@ char *strdup(const char *s);
 #define ST_LITERAL	1		/* A literal token such as "foo" and "_bar" */
 #define ST_NUMBER	2		/* A number token such as "1", "0.2", "5e-10" */
 #define ST_STRING	3		/* A quoted string token */
-#define ST_SYMBOL	4		/* A symbol token such as "+", "@", etc. */		
+#define ST_SYMBOL	4		/* A symbol token such as "+", "@", etc. */
 
 #define imin(a,b) ((a) < (b) ? (a) : (b))
 #define imax(a,b) ((a) > (b) ? (a) : (b))
@@ -78,6 +79,7 @@ typedef struct {
   int revision;		/* Revision */
   int alpha;		/* Alpha level */
   int beta;		/* Beta level */
+  int rc;       /* release candidate level */
 } Version;
 
 typedef struct {
@@ -116,4 +118,10 @@ const char *bitrangeSpec(int n);
 
 #define tv_to_ms(tv) ( ((unsigned long long)(tv)->tv_sec)*1000 + (tv)->tv_usec/1000)
 
+typedef enum boolean_en {
+  FALSE = 0,
+  TRUE = 1
+} Boolean;
+
+__END_DECLS
 #endif

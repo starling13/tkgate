@@ -3,26 +3,23 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during TkGate installation
 dnl	to configure the system for the local environment.
 
-AC_INIT([tkgate],[2.0-b10])
-AM_INIT_AUTOMAKE
-AC_PREREQ(2.57)
+AC_INIT([tkgate],[2.0.0],[hansen@tkgate.org],[tkgate],[http://www.tkgate.org])
+AM_INIT_AUTOMAKE([foreign])
+AC_PREREQ(2.69)
 AC_CONFIG_HEADER(config.h)
 AC_LANG(C)
 
 #############################################################################
-# 
+#
 # TkGate version and identifying information.
 #
 AC_DEFINE(TKGATE_VERSION, 	"2.0",					[Base TkGate version number])
 AC_SUBST(TKGATE_VERSION,	2.0)
-AC_DEFINE(TKGATE_VERSION_SUFFIX,"-b10",					[TkGate version suffix])
+AC_DEFINE(TKGATE_VERSION_SUFFIX,".0",					[TkGate version suffix])
 AC_DEFINE(TKGATE_FULL_VERSION,	(TKGATE_VERSION TKGATE_VERSION_SUFFIX), [Full TkGate version number])
 AC_DEFINE(TKGATE_DESCRIPTION,	"Digital Circuit Editor and Simulator",	[Tkgate short description])
 AC_DEFINE(TKGATE_LOCALDOC,	"file:@H/doc/index.html", 		[Local documentation location])
-AC_DEFINE(TKGATE_COPYRIGHT, 	"Copyright (C) 1987-2009 by Jeffery P. Hansen", [Copyright notice])
-AC_DEFINE(TKGATE_MAILCONTACT,	"hansen@tkgate.org",			[Email address for support])
-AC_DEFINE(TKGATE_HOMEPAGE,	"http://www.tkgate.org",		[TkGate web page])
-
+AC_DEFINE(TKGATE_COPYRIGHT, 	"Copyright (C) 1987-2015 by Jeffery P. Hansen", [Copyright notice])
 
 #############################################################################
 #
@@ -32,7 +29,7 @@ AC_DEFINE(TKGATE_HOMEPAGE,	"http://www.tkgate.org",		[TkGate web page])
 #
 # Tcl/Tk version we will try to use (from most favored to least favored)
 #
-TKGATE_TCLTK_VERSIONS="8.5 8.4 8.3"
+TKGATE_TCLTK_VERSIONS="8.6 8.5 8.4 8.3"
 
 #
 # Directories to search for include files
@@ -42,7 +39,7 @@ TKGATE_INCDIRS="/usr/X11R6/include /usr/X11/include /pkgs/include /usr/local/inc
 #
 # Directories to search for library files
 #
-TKGATE_LIBDIRS="/usr/X11R6/lib /usr/X11/lib /pkgs/lib /usr/local/lib /usr/lib /sw/lib /opt/local/lib"
+TKGATE_LIBDIRS="/usr/X11R6/lib /usr/X11/lib /pkgs/lib /usr/local/lib /usr/lib /sw/lib /opt/local/lib /usr/local/lib/tcl /usr/lib64"
 
 #
 # Libraries we may need if available.
@@ -52,7 +49,7 @@ TKGATE_LIBDIRS="/usr/X11R6/lib /usr/X11/lib /pkgs/lib /usr/local/lib /usr/lib /s
 
 #############################################################################
 #
-# Default prefix directory for installation by OS 
+# Default prefix directory for installation by OS
 #
 AC_PREFIX_DEFAULT(/usr/local)
 
@@ -69,7 +66,7 @@ TKGATE_LIBS=""
 #
 # Supported locales
 #
-TKGATE_LOCALES="ca cs cy de en es fr it ja"
+TKGATE_LOCALES="ca cs cy de en es fr it ja ru"
 AC_SUBST(TKGATE_LOCALES)
 
 #############################################################################
@@ -116,13 +113,12 @@ AC_DEFINE_UNQUOTED(TKGATE_SECONDARYHOME, "$currentDirectory", [Backup location f
 # the AC_PROG_CC macro from adding "-g -O2".
 #
 # Set TKGATE_CFLAGS in options.h to set compiler options.
-# 
+#
 if test "${CFLAGS+set}" != "set" ; then
     CFLAGS=`grep "^#define.*TKGATE_CFLAGS" options.h | sed 's/#define.*TKGATE_CFLAGS//'`
 fi
 
 # Checks for programs.
-AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_YACC
 AM_PROG_LEX
@@ -132,19 +128,19 @@ AC_PROG_RANLIB
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-AC_PROG_LIBTOOL
 
 # Checks for header files.
 AC_PATH_XTRA
 AC_FUNC_ALLOCA
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([limits.h malloc.h stdlib.h string.h sys/param.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([limits.h malloc.h stdlib.h string.h sys/param.h sys/time.h unistd.h stdint.h])
 TKG_CHECK_ICONV_H
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
+AC_TYPE_INTPTR_T
 AC_HEADER_TIME
 AC_STRUCT_TM
 AC_CHECK_TYPES(unsigned long long)
@@ -156,6 +152,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([getcwd gettimeofday memmove memset putenv select strcasecmp strchr strcspn strdup strncasecmp strrchr strspn strstr strcasestr])
+AC_CHECK_LIB(m, floor)
 
 #############################################################################
 #
